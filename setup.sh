@@ -13,6 +13,9 @@ sudo apt-get install -y \
     curl \
     git \
     gnupg \
+    gnome-tweaks \
+    gtk2-engines-murrine \
+    gtk2-engines-pixbuf \
     lsb-release \
     libssl-dev \
     nginx \
@@ -32,4 +35,10 @@ wget https://get.docker.com --output-document=install_docker.sh && \
 chmod +x install_docker.sh && \
 ./install_docker.sh && \
 rm -rf install_docker.sh
+cd $WD # return to original workdir
+
+# ubuntu themes
+mkdir -p ~/.themes ~/.icons
+cd ~/.themes
+git clone https://github.com/EliverLara/Ant-Bloody.git
 cd $WD # return to original workdir
