@@ -13,6 +13,7 @@ alias diff='colordiff'
 
 # other
 alias c='clear'
+alias squish='export PS1="${debian_chroot:+($debian_chroot)}$ORANGE\W$RESET$RESET \$ "'
 
 # vim 
 alias vi=vim
@@ -33,3 +34,14 @@ alias .5='cd ../../../../..'
 alias grep='grep --color=auto'
 alias egrep='egrep --color=auto'
 alias fgrep='fgrep --color=auto'
+
+# vscode
+alias code,='code .'
+alias code.='code .'
+code() {
+    if [[ $@ == "," ]]; then
+        command code .
+    else
+        command code "$@"
+    fi
+}

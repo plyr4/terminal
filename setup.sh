@@ -25,10 +25,11 @@ sudo apt-get install -y \
 sudo apt-get install python3.6
 
 # install docker
-WD=$(pwd)
-cd /tmp
+WD=$(pwd) # record workdir
+cd /tmp # move to tmp
+# download and run docker install script from https://get.docker.com
 wget https://get.docker.com --output-document=install_docker.sh && \
 chmod +x install_docker.sh && \
 ./install_docker.sh && \
 rm -rf install_docker.sh
-cd $WD
+cd $WD # return to original workdir
