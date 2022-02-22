@@ -1,8 +1,8 @@
-[includeIf "gitdir:~/dev/personal/"]
-  	path = ~/.gitconfig-personal
+[includeIf "gitdir:~/dev/external/"]
+  	path = ~/.gitconfig-external
 
 [includeIf "gitdir:~/.config/nvim/"]
-  	path = ~/.gitconfig-personal
+  	path = ~/.gitconfig-external
 
 [includeIf "gitdir:~/dev/tgt/"]
   	path = ~/.gitconfig-tgt
