@@ -1,5 +1,8 @@
 #!/bin/sh
 set -x
+
+echo "running linux/setup.sh"
+
 # This file is intended to be ran when setting up a new linux distribution
 WD=$(pwd) # record workdir
 
