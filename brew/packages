@@ -2,7 +2,6 @@ bdw-gc
 brotli
 c-ares
 ca-certificates
-colima
 docker
 docker-compose
 docker-credential-helper
@@ -68,9 +67,7 @@ transporter
 tree-sitter
 unbound
 unibilium
-vault
 vde
-vela
 xclip
 xorgproto
 xz
