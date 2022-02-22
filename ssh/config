@@ -1,0 +1,22 @@
+# Personal account
+Host github.com
+  HostName github.com
+  User plyr4
+  AddKeysToAgent yes
+  IdentityFile ~/.ssh/id_ed25519_external
+
+# Tgt account
+Host git.target.com    
+  HostName git.target.com
+  User DavidVader
+  AddKeysToAgent yes
+  IdentityFile ~/.ssh/id_ed25519_tgt
+
+# Rules
+Host *
+  ForwardAgent yes
+  PreferredAuthentications publickey,gssapi-with-mic,gssapi-keyex,keyboard-interactive,password
+  StrictHostKeyChecking false
+  UserKnownHostsFile /dev/null
+  CheckHostIP no
+  GSSAPIAuthentication yes
