@@ -1,0 +1,24 @@
+[includeIf "gitdir:~/dev/personal/"]
+  	path = ~/.gitconfig-personal
+
+[includeIf "gitdir:~/.config/nvim/"]
+  	path = ~/.gitconfig-personal
+
+[includeIf "gitdir:~/dev/tgt/"]
+  	path = ~/.gitconfig-tgt
+
+[url "git@git.target.com:"]
+	insteadOf = https://git.target.com/
+
+[url "https://github.com/"]
+	insteadOf = git://github.com/
+
+[commit]
+	gpgsign = true
+
+[push]
+	default = simple
+
+[pull]
+	rebase = false
+
