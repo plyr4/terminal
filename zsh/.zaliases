@@ -35,7 +35,7 @@ alias ....='cd ../../../../'
 alias .....='cd ../../../../'
 alias .4='cd ../../../../'
 alias .5='cd ../../../../..'
-alias cdd='cd ~/dev'
+alias cdd='cd ~/Desktop/dev'
 alias cde='cdd; cd external'
 alias cdgv='cde; cd go-vela'
 alias cdui='cdgv; cd ui'
@@ -50,6 +50,7 @@ alias fgrep='fgrep --color=auto'
 # vscode
 alias code,='code .'
 alias code.='code .'
+unalias code 2>/dev/null
 code() {
     if [[ $@ == "," ]]; then
         command code .
@@ -58,3 +59,9 @@ code() {
     fi
 }
 
+# rider
+alias rider,='rider .'
+alias rider.='rider .'
+rider() {
+    open -na "Rider.app" --args "$@"
+}

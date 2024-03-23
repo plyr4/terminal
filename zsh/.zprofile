@@ -1,6 +1,3 @@
-# SSL
-export SSL_CERT_FILE='~/tgt-ca-bundle.crt' 
-
 # homebrew
 eval "$(/opt/homebrew/bin/brew shellenv)"
 

@@ -5,13 +5,6 @@ Host github.com
   AddKeysToAgent yes
   IdentityFile ~/.ssh/id_ed25519_external
 
-# Tgt account
-Host git.target.com    
-  HostName git.target.com
-  User DavidVader
-  AddKeysToAgent yes
-  IdentityFile ~/.ssh/id_ed25519_tgt
-
 # Rules
 Host *
   ForwardAgent yes

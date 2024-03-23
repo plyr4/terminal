@@ -4,12 +4,6 @@
 [includeIf "gitdir:~/.config/nvim/"]
   	path = ~/.gitconfig-external
 
-[includeIf "gitdir:~/dev/tgt/"]
-  	path = ~/.gitconfig-tgt
-
-[url "git@git.target.com:"]
-	insteadOf = https://git.target.com/
-
 [url "https://github.com/"]
 	insteadOf = git://github.com/
 
