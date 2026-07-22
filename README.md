@@ -1,25 +1,22 @@
 # plyr4/terminal
 
-Personal macOS (and lightly Linux) dotfiles, managed with [GNU Stow](https://www.gnu.org/software/stow/).
+Personal laptop dotfiles managed with [GNU Stow](https://www.gnu.org/software/stow/).
 
 ## how it works (read this first)
 
 The repo is the single source of truth. Stow symlinks every file under
-[`stow/`](stow/) into your home directory, so `~/.zaliases` *is* a symlink to
-`stow/zsh/.zaliases` — the same file on disk:
+[`stow/`](stow/) into your home directory.
 
 ```sh
 ls -l ~/.zaliases
 # ~/.zaliases -> .../terminal/stow/zsh/.zaliases
 ```
 
-- **Editing `~/.zaliases` or `stow/zsh/.zaliases` is the same edit** — there is nothing to copy or "sync". The change is live in a new shell right away and is already in the repo's working tree; you just `git commit` it.
-- **`sync.sh` is for Homebrew packages, not dotfiles.** Dotfiles never need syncing — the symlink *is* the sync.
+- **Editing `~/.zaliases` or `stow/zsh/.zaliases` is the same edit** so there is nothing to copy or "sync". The change is live in a new shell right away and is already in the repo's working tree; you just `git commit` it.
+- **`sync.sh` is for Homebrew packages installed over time, not dotfiles.** Dotfiles never need syncing because the symlink *is* the sync.
 - **Secrets are the exception:** `~/.zsensitive` is a real file (not a symlink), git-ignored, and never committed.
 
-## everyday workflows
-
-Run `git` from the repo: `cd ~/dev/github.com/plyr4/terminal`.
+## Everyday Workflows
 
 **Add or change an alias, function, env var, or the prompt**
 
@@ -30,7 +27,7 @@ git add -A && git commit -m "zsh: add my-alias"
 
 Bash equivalents are `~/.bash_aliases` and `~/.bash_profile`.
 
-**Add a work-only alias or env var** — edit `~/.config/zsh/internal.zsh` (the git-ignored work overlay) and commit it inside `vader-terminal-internal/`, never in the public repo.
+**Add a work-only alias or env var**, edit `~/.config/zsh/internal.zsh` (the git-ignored work overlay) and commit it inside `vader-terminal-internal/`, never in the public repo.
 
 **Add a secret** (token, password):
 
@@ -38,7 +35,7 @@ Bash equivalents are `~/.bash_aliases` and `~/.bash_profile`.
 echo 'export GITHUB_TOKEN=...' >> ~/.zsensitive   # real file, never committed
 ```
 
-**I just ran `brew install <pkg>`** — capture it so a new laptop gets it too:
+**I just ran `brew install <pkg>`**, capture it so a new laptop gets it too:
 
 ```sh
 ./sync.sh             # shows what is installed but not tracked in the Brewfile
@@ -52,7 +49,7 @@ echo 'export GITHUB_TOKEN=...' >> ~/.zsensitive   # real file, never committed
 
 ## where things live
 
-Every path below is a symlink into the repo — edit it directly, then commit.
+Every path below is a symlink, so edit it directly, then commit.
 
 | to change…                      | edit                                                             |
 | ------------------------------- | ---------------------------------------------------------------- |
@@ -65,7 +62,7 @@ Every path below is a symlink into the repo — edit it directly, then commit.
 | vim                             | `~/.vimrc`                                                       |
 | kitty                           | `~/.config/kitty/kitty.conf`                                     |
 | work-only shell config          | `~/.config/zsh/internal.zsh` *(overlay)*                         |
-| Homebrew packages               | [`Brewfile`](Brewfile) — capture drift with [`sync.sh`](sync.sh) |
+| Homebrew packages               | [`Brewfile`](Brewfile) captures drift with [`sync.sh`](sync.sh) |
 | secrets (never committed)       | `~/.zsensitive`, `~/.bash_local`                                 |
 
 ## setup
@@ -107,7 +104,15 @@ The [`Brewfile`](Brewfile) (installed with `brew bundle`) is the source of truth
 git add Brewfile && git commit -m "brew: track <pkg>"
 ```
 
-**Before switching laptops** — snapshot the whole machine at once:
+**Pick packages one at a time**, review the drift interactively instead of hand-editing the Brewfile:
+
+```sh
+./sync.sh --interactive   # or -i
+```
+
+Each installed-but-untracked tap, formula, and cask is offered in turn with its description: press Enter (or `y`) to keep it, `n` to skip, `o` to send it to the other file, `q` to stop. Work/private names route to the git-ignored `vader-terminal-internal/Brewfile`; everything else to the public `Brewfile`. Items already tracked in either file are not offered again, so it is safe to run repeatedly and only decide on what is new. Tune the routing with `SYNC_PRIVATE_RE`.
+
+**Before switching laptops** snapshot the whole machine at once:
 
 ```sh
 ./sync.sh --dump        # backs up the old Brewfile first; review with git diff
@@ -168,8 +173,8 @@ The Neovim config is a standalone git repo (an AstroNvim fork), so it is managed
 
 Nothing secret lives in this repo. Machine-local secrets go in files that are git-ignored and sourced only if present:
 
-- `~/.zsensitive` — sourced by `~/.zshrc` (zsh)
-- `~/.bash_local` — sourced by `~/.bash_profile` (bash)
+- `~/.zsensitive` sourced by `~/.zshrc` (zsh)
+- `~/.bash_local` sourced by `~/.bash_profile` (bash)
 
 ```sh
 echo 'export GITHUB_TOKEN=...' >> ~/.zsensitive
