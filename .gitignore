@@ -1,1 +1,14 @@
+# macos
+.DS_Store
+
+# local, machine-specific, and secret files (never commit these)
+inspiration/
+internal/
+vader-terminal-internal/
+.zsensitive
+.bash_local
+*sensitive*
+*.local
+
+# transient artifacts
 install_docker.sh

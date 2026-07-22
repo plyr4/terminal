@@ -1,0 +1,34 @@
+[user]
+	name = plyr4
+	email = davelvader@gmail.com
+	signingkey = BFC28087CB91E7EA
+
+[commit]
+	gpgsign = true
+
+[push]
+	default = simple
+	autoSetupRemote = true
+
+[pull]
+	rebase = false
+
+[init]
+	defaultBranch = main
+
+[safe]
+	directory = .
+
+[url "ssh://git@github.com/"]
+	insteadOf = https://github.com/
+
+[filter "lfs"]
+	clean = git-lfs clean -- %f
+	smudge = git-lfs smudge -- %f
+	process = git-lfs filter-process
+	required = true
+
+# optional overlay for private/work configuration.
+# git silently ignores this include when the file does not exist.
+[include]
+	path = ~/.config/git/internal.gitconfig

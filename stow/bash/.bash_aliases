@@ -1,19 +1,18 @@
-# bashrc edits
+# edit and reload shell config
 alias cbp='code ~/.bash_profile'
-alias sbp='source ~/.bashrc'
+alias sbp='source ~/.bash_profile'
 
-# ls
+# ls with colors, hidden files, and type indicators
 alias ls='ls -aGp'
 
-# copy progress bar
+# copy with a progress bar
 alias cpv='rsync -ah --info=progress2'
 
-# diff
+# colorized diff
 alias diff='colordiff'
 
-# other
+# clear the screen
 alias c='clear'
-alias squish='export PS1="${debian_chroot:+($debian_chroot)}$ORANGE\W$RESET$RESET \$ "'
 
 # vim
 alias vi=vim
@@ -22,25 +21,23 @@ alias vis='vim "+set si"'
 alias edit='vim'
 alias vi,='vi .'
 alias vi.='vi .'
-alias vim,='vim ,'
+alias vim,='vim .'
 alias vim.='vim .'
 
-# change directory
+# open neovim in its config directory
+alias vnvc='cd ~/.config/nvim; nvim'
+
+# directory navigation
 alias cd..='cd ..'
 alias ..='cd ..'
 alias ...='cd ../../../'
 alias ....='cd ../../../../'
-alias .....='cd ../../../../'
 alias .4='cd ../../../../'
 alias .5='cd ../../../../..'
 alias cdd='cd ~/dev'
-alias cde='cdd; cd external'
-alias cdgv='cde; cd go-vela'
-alias cdui='cdgv; cd ui'
-alias cdhv='cdi; cd davidvader; cd heyvela;'
-alias vnvc='cd ~/.config/nvim; nvim'
+alias cde='cdd; cd github.com'
 
-# grep
+# colorized grep
 alias grep='grep --color=auto'
 alias egrep='egrep --color=auto'
 alias fgrep='fgrep --color=auto'
@@ -48,11 +45,12 @@ alias fgrep='fgrep --color=auto'
 # vscode
 alias code,='code .'
 alias code.='code .'
-code() {
-    if [[ $@ == "," ]]; then
-        command code .
-    else
-        command code "$@"
-    fi
-}
 
+# code: run `code .` when called with a bare comma, otherwise pass through
+code() {
+  if [[ $@ == "," ]]; then
+    command code .
+  else
+    command code "$@"
+  fi
+}
