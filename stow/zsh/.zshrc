@@ -15,7 +15,7 @@ unset f
 
 # zsh plugins installed via Homebrew
 if command -v brew >/dev/null 2>&1; then
-  brew_prefix="$(brew --prefix)"
+  brew_prefix="${HOMEBREW_PREFIX:-$(brew --prefix)}"
   export ZSH_HIGHLIGHT_HIGHLIGHTERS_DIR="$brew_prefix/share/zsh-syntax-highlighting/highlighters"
   [ -r "$brew_prefix/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh" ] && \
     source "$brew_prefix/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"

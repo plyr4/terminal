@@ -32,13 +32,22 @@ PROMPT='%F{36}%n%f:%F{208}~${PWD#$HOME}%f %F{178}${vcs_info_msg_0_}%f%F{12}#%f '
 # go
 export PATH="$PATH:/usr/local/go/bin"
 
-# nvm, installed via Homebrew
-if command -v brew >/dev/null 2>&1; then
-  export NVM_DIR="$HOME/.nvm"
-  nvm_prefix="$(brew --prefix nvm 2>/dev/null || true)"
-  [ -s "$nvm_prefix/nvm.sh" ] && \. "$nvm_prefix/nvm.sh"
-  [ -s "$nvm_prefix/etc/bash_completion.d/nvm" ] && \. "$nvm_prefix/etc/bash_completion.d/nvm"
-  unset nvm_prefix
+# nvm (Homebrew). eagerly sourcing nvm.sh costs several seconds per shell (it
+# auto-selects a node version and loads completions), so lazy-load it: the first
+# call to nvm/node/npm/npx/corepack sources nvm for real and then runs.
+export NVM_DIR="$HOME/.nvm"
+if [ -s "${HOMEBREW_PREFIX:-/opt/homebrew}/opt/nvm/nvm.sh" ]; then
+  _load_nvm() {
+    local d="${HOMEBREW_PREFIX:-/opt/homebrew}/opt/nvm"
+    unset -f nvm node npm npx corepack 2>/dev/null
+    \. "$d/nvm.sh"
+    [ -s "$d/etc/bash_completion.d/nvm" ] && \. "$d/etc/bash_completion.d/nvm"
+    rehash 2>/dev/null || true
+  }
+  for nvm_cmd in nvm node npm npx corepack; do
+    eval "${nvm_cmd}() { _load_nvm; ${nvm_cmd} \"\$@\"; }"
+  done
+  unset nvm_cmd
 fi
 
 # pnpm
