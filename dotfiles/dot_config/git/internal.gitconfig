@@ -22,3 +22,15 @@
 
 [credential "https://stagegit.target.com"]
 	provider = github
+
+[url "git@github-ghec:target-corp/"]
+	insteadOf = git@github.com:target-corp/
+	insteadOf = https://github.com/target-corp/
+
+[url "git@github-ghec:target-corp-eng/"]
+	insteadOf = git@github.com:target-corp-eng/
+	insteadOf = https://github.com/target-corp-eng/
+
+[url "git@github-ghec:target-corp-test/"]
+	insteadOf = git@github.com:target-corp-test/
+	insteadOf = https://github.com/target-corp-test/
