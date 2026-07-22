@@ -1,0 +1,24 @@
+# private/work git configuration.
+# applied to ~/.config/git/internal.gitconfig by the work profile and pulled in
+# by the base ~/.gitconfig via its [include].
+
+[includeIf "gitdir:~/dev/git.target.com/"]
+	path = ~/.config/git/tgt.gitconfig
+
+[includeIf "gitdir:~/dev/github.com/target-corp/"]
+	path = ~/.config/git/ghec.gitconfig
+
+[includeIf "gitdir:~/dev/github.com/target-corp-eng/"]
+	path = ~/.config/git/ghec.gitconfig
+
+[includeIf "gitdir:~/dev/github.com/target-corp-test/"]
+	path = ~/.config/git/ghec.gitconfig
+
+[url "ssh://git@git.target.com/"]
+	insteadOf = https://git.target.com/
+
+[credential "https://dev.azure.com"]
+	useHttpPath = true
+
+[credential "https://stagegit.target.com"]
+	provider = github
