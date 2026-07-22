@@ -1,195 +1,137 @@
 # plyr4/terminal
 
-Personal laptop dotfiles managed with [GNU Stow](https://www.gnu.org/software/stow/).
+Personal laptop dotfiles managed with [chezmoi](https://www.chezmoi.io).
 
-## how it works (read this first)
+chezmoi renders the files under [`home/`](home) into `$HOME`. The repo is the
+single source of truth: edit the source, run `chezmoi apply`, and the change is
+live. An optional, git-ignored **work profile** layers private configuration on
+top without ever touching a personal machine.
 
-The repo is the single source of truth. Stow symlinks every file under
-[`stow/`](stow/) into your home directory.
+## install
 
-```sh
-ls -l ~/.zaliases
-# ~/.zaliases -> .../terminal/stow/zsh/.zaliases
-```
-
-- **Editing `~/.zaliases` or `stow/zsh/.zaliases` is the same edit** so there is nothing to copy or "sync". The change is live in a new shell right away and is already in the repo's working tree; you just `git commit` it.
-- **`sync.sh` is for Homebrew packages installed over time, not dotfiles.** Dotfiles never need syncing because the symlink *is* the sync.
-- **Secrets are the exception:** `~/.zsensitive` is a real file (not a symlink), git-ignored, and never committed.
-
-## Everyday Workflows
-
-**Add or change an alias, function, env var, or the prompt**
+Fresh machine (installs chezmoi, clones this repo, applies everything):
 
 ```sh
-vim ~/.zaliases       # aliases/functions   (env, PATH, and prompt live in ~/.zprofile)
-git add -A && git commit -m "zsh: add my-alias"
+sh -c "$(curl -fsLS get.chezmoi.io)" -- init --apply plyr4/terminal
 ```
 
-Bash equivalents are `~/.bash_aliases` and `~/.bash_profile`.
-
-**Add a work-only alias or env var**, edit `~/.config/zsh/internal.zsh` (the git-ignored work overlay) and commit it inside `vader-terminal-internal/`, never in the public repo.
-
-**Add a secret** (token, password):
+Already have Homebrew?
 
 ```sh
-echo 'export GITHUB_TOKEN=...' >> ~/.zsensitive   # real file, never committed
+brew install chezmoi
+chezmoi init --apply plyr4/terminal
 ```
 
-**I just ran `brew install <pkg>`**, capture it so a new laptop gets it too:
+`init` asks two questions and remembers the answers in
+`~/.config/chezmoi/chezmoi.toml`:
+
+- **Is this a work machine?** — enables the work profile (default: no)
+- **Manage the neovim config?** — clones the AstroNvim fork into
+  `~/.config/nvim` (default: yes)
+
+`apply` then writes the dotfiles and runs the bootstrap scripts:
+
+1. install system packages — Xcode CLT + Homebrew on macOS, or apt + Go + Docker
+   on Linux (runs once per machine);
+2. `brew bundle` from the [`Brewfile`](Brewfile) (re-runs whenever it changes).
+
+Restart your shell (`exec zsh`) when it finishes.
+
+## everyday workflows
+
+chezmoi syncs the source and `$HOME` explicitly:
 
 ```sh
-./sync.sh             # shows what is installed but not tracked in the Brewfile
+chezmoi edit ~/.zshrc     # edit a file's source, then...
+chezmoi apply             # ...write it into $HOME
+
+chezmoi diff              # preview pending changes ($HOME vs source)
+chezmoi status            # short status of what would change
+chezmoi update            # git pull the source and apply in one step
+chezmoi doctor            # diagnose a broken setup
 ```
 
-**Check everything is linked and healthy:**
+Changed a file directly in `$HOME`? Pull it back into the source and commit:
 
 ```sh
-./validate.sh
+chezmoi re-add                                   # re-import managed files that changed
+chezmoi cd                                        # open the source dir
+git add -A && git commit -m "zsh: ..." && git push
 ```
 
-## where things live
+`chezmoi edit`, `chezmoi cd`, and `chezmoi source-path` mean you never need to
+remember where the source physically lives (`~/.local/share/chezmoi`).
 
-Every path below is a symlink, so edit it directly, then commit.
-
-| to change…                      | edit                                                             |
-| ------------------------------- | ---------------------------------------------------------------- |
-| personal aliases / functions    | `~/.zaliases`                                                    |
-| env vars, `PATH`, prompt        | `~/.zprofile`                                                    |
-| zsh startup (plugins, drop-ins) | `~/.zshrc`                                                       |
-| bash                            | `~/.bash_aliases`, `~/.bash_profile`                             |
-| git identity + config           | `~/.gitconfig`                                                   |
-| ssh hosts                       | `~/.ssh/config`                                                  |
-| vim                             | `~/.vimrc`                                                       |
-| kitty                           | `~/.config/kitty/kitty.conf`                                     |
-| work-only shell config          | `~/.config/zsh/internal.zsh` *(overlay)*                         |
-| Homebrew packages               | [`Brewfile`](Brewfile) captures drift with [`sync.sh`](sync.sh) |
-| secrets (never committed)       | `~/.zsensitive`, `~/.bash_local`                                 |
-
-## setup
-
-### new machine
+## adding a new managed file
 
 ```sh
-git clone git@github.com:plyr4/terminal.git ~/dev/github.com/plyr4/terminal
-cd ~/dev/github.com/plyr4/terminal
-./install.sh            # OS prerequisites (Homebrew + Brewfile) and stow everything
-./bootstrap/neovim.sh   # optional: neovim config
-exec zsh                # restart your shell
+chezmoi add ~/.config/foo/foo.conf     # import as-is
+chezmoi add --encrypt ~/.some-secret   # import encrypted (see secrets)
 ```
 
-`install.sh` detects the OS, runs the matching bootstrap script, then links every package. If the xcode command line tools launch a GUI installer, re-run `./install.sh` once it finishes.
+chezmoi chooses the source name automatically (`dot_`, `private_`,
+`executable_`, …). Commit from `chezmoi cd`.
 
-### existing machine (already has real dotfiles)
+## Homebrew
 
-`migrate.sh` moves any colliding file into `~/.dotfiles-backup/<timestamp>/`, then links the packages. It is safe to re-run and skips files that are already linked.
+The [`Brewfile`](Brewfile) is the single source of truth for packages, and
+`chezmoi apply` runs `brew bundle` automatically whenever it changes. Capture
+packages you installed by hand, then commit:
 
 ```sh
-cd ~/dev/github.com/plyr4/terminal
-./migrate.sh            # preview first with --dry-run; --no-internal skips the work overlay
-./validate.sh           # confirm everything is linked and wired
-exec zsh
+cd "$(chezmoi source-path)/.."     # repo root
+brew bundle dump --force            # snapshot the machine into ./Brewfile
+brew bundle check                   # what's in the Brewfile but not installed?
 ```
 
-Roll back by moving a file from the backup directory back into `~`.
+Work-only packages can go in a git-ignored `Brewfile.local` at the repo root,
+which `apply` also installs when present.
 
-## keeping packages in sync (drift over time)
+## work profile
 
-The [`Brewfile`](Brewfile) (installed with `brew bundle`) is the source of truth for packages. Over time you `brew install` things by hand; [`sync.sh`](sync.sh) keeps the repo aware of that drift. zsh plugins are Homebrew packages, so they are captured too.
+Work configuration (git identities, SSH hosts, proxies, npm registry) is applied
+only when `work = true`. It lives in the source tree but is **git-ignored, so it
+is never committed to this public repo** — keep it in a private repo.
+
+Enable it:
 
 ```sh
-# read-only: what is installed but not in the Brewfile (and vice versa)
-./sync.sh
-
-# add the formulae/casks you want to keep to the Brewfile, then commit
-git add Brewfile && git commit -m "brew: track <pkg>"
+chezmoi init                 # answer "yes" to the work-machine prompt, or
+chezmoi edit-config          # set  work = true  under [data]
+chezmoi apply
 ```
 
-**Pick packages one at a time**, review the drift interactively instead of hand-editing the Brewfile:
+When enabled, the files below layer onto the base through its built-in extension
+points (each tolerates the file being absent, so the base works standalone):
 
-```sh
-./sync.sh --interactive   # or -i
-```
+| work file                                           | hooks into                         |
+| --------------------------------------------------- | ---------------------------------- |
+| `~/.config/git/internal.gitconfig` (+ `tgt`/`ghec`) | `~/.config/git/config` `[include]` |
+| `~/.ssh/config.d/target.conf`                       | `~/.ssh/config` `Include`          |
+| `~/.config/zsh/internal.zsh`                        | `~/.zshrc` drop-in loop            |
+| `~/.npmrc`, `~/.local/bin/post_ghec_webhook.sh`     | —                                  |
 
-Each installed-but-untracked tap, formula, and cask is offered in turn with its description: press Enter (or `y`) to keep it, `n` to skip, `o` to send it to the other file, `q` to stop. Work/private names route to the git-ignored `vader-terminal-internal/Brewfile`; everything else to the public `Brewfile`. Items already tracked in either file are not offered again, so it is safe to run repeatedly and only decide on what is new. Tune the routing with `SYNC_PRIVATE_RE`.
+On a personal machine `work` stays `false` and none of these are touched.
 
-**Before switching laptops** snapshot the whole machine at once:
+## secrets
 
-```sh
-./sync.sh --dump        # backs up the old Brewfile first; review with git diff
-```
+Machine-local secrets never live in the repo:
 
-`--dump` replaces the curated file with a full `brew bundle dump`
-run `git checkout Brewfile` to revert if you prefer to keep the curated list.
-
-Work taps and packages must not land in this public repo. `--dump` flags anything private-looking (non-default taps, `git@` URLs) so you can scrub it, or dump straight into the git-ignored overlay:
-
-```sh
-./sync.sh --dump --file vader-terminal-internal/Brewfile
-```
-
-## linux
-
-```sh
-./bootstrap/linux.sh   # apt packages, go, docker
-./bootstrap/stow.sh    # symlink the packages
-```
-
-Linux support is intentionally minimal and isolated in `bootstrap/linux.sh`.
-Override the Go version with `GO_VERSION=1.22.5 ./bootstrap/linux.sh`.
-
-## working with stow
-
-All commands run from the repo root.
-
-```sh
-# link (or re-link) a package
-stow --no-folding --restow --dir stow --target ~ zsh
-
-# link everything at once
-./bootstrap/stow.sh
-
-# remove a package's symlinks
-stow --dir stow --target ~ --delete zsh
-```
-
-`--no-folding` links individual files instead of turning a whole directory into a symlink, which keeps `~/.ssh` private and lets the private overlay (below) drop files into the same directories.
-
-### adding a new package
-
-1. Create `stow/<name>/` with files laid out relative to `$HOME`
-   (e.g. `stow/foo/.config/foo/foo.conf` → `~/.config/foo/foo.conf`).
-2. Add `<name>` to the `packages` array in [`bootstrap/stow.sh`](bootstrap/stow.sh).
-3. Run `./bootstrap/stow.sh`.
-
-## neovim
-
-The Neovim config is a standalone git repo (an AstroNvim fork), so it is managed by [`bootstrap/neovim.sh`](bootstrap/neovim.sh) rather than Stow. It backs up any existing `~/.config/nvim` and clones the fork. Point it elsewhere with `NVIM_CONFIG_REPO=... ./bootstrap/neovim.sh`.
-
-## kitty
-
-`brew bundle` installs the kitty app; the package provides a minimal [`kitty.conf`](stow/kitty/.config/kitty/kitty.conf). On Linux install kitty from the [official binary](https://sw.kovidgoyal.net/kitty/binary/).
-
-## secrets and local overrides
-
-Nothing secret lives in this repo. Machine-local secrets go in files that are git-ignored and sourced only if present:
-
-- `~/.zsensitive` sourced by `~/.zshrc` (zsh)
-- `~/.bash_local` sourced by `~/.bash_profile` (bash)
-
-```sh
-echo 'export GITHUB_TOKEN=...' >> ~/.zsensitive
-```
-
-## private / work overlay
-
-Work-specific configuration is isolated in `vader-terminal-internal/` (git-ignored) and layered on top of the public base through optional include hooks:
-
-- `~/.gitconfig` includes `~/.config/git/internal.gitconfig` if it exists
-- `~/.ssh/config` includes `~/.ssh/config.d/*.conf`
-- `~/.zshrc` sources `~/.config/zsh/*.zsh`
-
-Because each hook tolerates missing files, the base repo works standalone. See `vader-terminal-internal/README.md` for details and how to split it into its own repository later.
+- `~/.zsensitive` (zsh) and `~/.bash_local` (bash) are sourced if present —
+  create them yourself:
+  ```sh
+  echo 'export GITHUB_TOKEN=...' >> ~/.zsensitive
+  ```
+- To version-control a secret, use chezmoi's built-in age encryption (only the
+  ciphertext is committed):
+  ```sh
+  age-keygen -o ~/.config/chezmoi/key.txt   # once
+  chezmoi edit-config                        # uncomment the [age] block
+  chezmoi add --encrypt ~/.zsensitive
+  ```
+- Or read from a password manager in a template, e.g.
+  `{{ onepasswordRead "op://vault/item/field" }}`.
 
 ## license
 
-[MIT](LICENSE)
+MIT

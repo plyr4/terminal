@@ -7,7 +7,7 @@ source ~/.zaliases
 # machine-local secrets (tokens, passwords). create this file yourself; never commit it
 [ -r ~/.zsensitive ] && source ~/.zsensitive
 
-# drop-ins contributed by overlays such as the private/work repo
+# drop-ins contributed by the work profile (managed by chezmoi when work=true)
 for f in ~/.config/zsh/*.zsh(N); do
   [ -r "$f" ] && source "$f"
 done

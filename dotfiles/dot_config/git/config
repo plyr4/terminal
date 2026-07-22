@@ -28,7 +28,7 @@
 	process = git-lfs filter-process
 	required = true
 
-# optional overlay for private/work configuration.
+# optional overlay for private/work configuration (managed by the work profile).
 # git silently ignores this include when the file does not exist.
 [include]
 	path = ~/.config/git/internal.gitconfig

@@ -1,0 +1,3 @@
+{{- /* work-profile files are only applied when work=true (see chezmoi.toml). */ -}}
+{{- if not .work }}
+{{- end }}

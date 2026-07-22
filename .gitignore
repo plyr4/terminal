@@ -1,14 +1,7 @@
-# macos
+# macOS
 .DS_Store
 
-# local, machine-specific, and secret files (never commit these)
-inspiration/
-internal/
-vader-terminal-internal/
-.zsensitive
-.bash_local
-*sensitive*
+# machine-local package list and secrets (live in $HOME, never in the repo)
+Brewfile.local
 *.local
-
-# transient artifacts
-install_docker.sh
+*sensitive*
