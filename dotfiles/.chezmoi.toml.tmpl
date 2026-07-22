@@ -1,0 +1,14 @@
+{{- $work := promptBoolOnce . "work" "Is this a work machine" false -}}
+{{- $neovim := promptBoolOnce . "neovim" "Manage the neovim (AstroNvim) config" true -}}
+[data]
+    work = {{ $work }}
+    neovim = {{ $neovim }}
+
+# Encrypted secrets (optional). To manage files with `chezmoi add --encrypt`,
+# generate an age key once:
+#     age-keygen -o ~/.config/chezmoi/key.txt
+# then uncomment the block below and set `recipient` to the public key it prints:
+# encryption = "age"
+# [age]
+#     identity = "~/.config/chezmoi/key.txt"
+#     recipient = "age1..."

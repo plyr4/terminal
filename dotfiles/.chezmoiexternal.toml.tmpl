@@ -1,0 +1,9 @@
+{{- /* neovim config (AstroNvim fork) managed as an external checkout. */ -}}
+{{- if .neovim }}
+[".config/nvim"]
+    type = "git-repo"
+    url = "https://github.com/plyr4/AstroVim.git"
+    refreshPeriod = "168h"
+    [".config/nvim".pull]
+        args = ["--ff-only"]
+{{- end }}

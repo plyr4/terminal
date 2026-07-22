@@ -1,0 +1,65 @@
+# edit and reload shell config
+alias vbp='vim ~/.zprofile'
+alias vba='vim ~/.zaliases'
+alias vzrc='vim ~/.zshrc'
+alias sbp='source ~/.zshrc'
+
+# ls with colors, hidden files, and type indicators
+alias ls='ls -aGp'
+
+# copy with a progress bar
+alias cpv='rsync -ah --info=progress2'
+
+# colorized diff
+alias diff='colordiff'
+
+# clear the screen
+alias c='clear'
+
+# open the default local dev port
+alias oui='open http://localhost:8888'
+
+# vim
+alias vi=vim
+alias svi='sudo vi'
+alias vis='vim "+set si"'
+alias edit='vim'
+alias vi,='vi .'
+alias vi.='vi .'
+alias vim,='vim .'
+alias vim.='vim .'
+
+# open neovim in its config directory
+alias vnvc='cd ~/.config/nvim; nvim'
+
+# directory navigation
+alias cd..='cd ..'
+alias ..='cd ..'
+alias ...='cd ../../../'
+alias ....='cd ../../../../'
+alias .4='cd ../../../../'
+alias .5='cd ../../../../..'
+alias cdd='cd ~/dev'
+alias cde='cdd; cd github.com'
+
+# git
+alias git-stash-staged='git stash -- $(git diff --staged --name-only)'
+alias tp='git commit -m "trigger pipeline" --allow-empty && git push'
+
+# colorized grep
+alias grep='grep --color=auto'
+alias egrep='egrep --color=auto'
+alias fgrep='fgrep --color=auto'
+
+# vscode
+alias code,='code .'
+alias code.='code .'
+
+# code: run `code .` when called with a bare comma, otherwise pass through
+code() {
+  if [[ $@ == "," ]]; then
+    command code .
+  else
+    command code "$@"
+  fi
+}

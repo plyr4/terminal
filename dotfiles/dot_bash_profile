@@ -1,0 +1,5 @@
+# aliases and functions
+[ -r ~/.bash_aliases ] && . ~/.bash_aliases
+
+# machine-local secrets (tokens, passwords). create this file yourself; never commit it
+[ -r ~/.bash_local ] && . ~/.bash_local
