@@ -1,8 +1,8 @@
 # homebrew bundle for a fresh macos setup.
 # install everything with: brew bundle --file=Brewfile
 
-# dotfile symlink manager (required by this repo)
-brew "stow"
+# dotfile manager (required by this repo)
+brew "chezmoi"
 
 # core cli
 brew "git"

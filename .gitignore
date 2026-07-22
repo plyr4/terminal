@@ -1,0 +1,7 @@
+# macOS
+.DS_Store
+
+# machine-local package list and secrets (live in $HOME, never in the repo)
+Brewfile.local
+*.local
+*sensitive*
