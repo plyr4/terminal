@@ -5,4 +5,5 @@ dot_config/zsh/internal.zsh
 dot_config/git/ghec.gitconfig
 dot_config/git/internal.gitconfig
 dot_config/git/tgt.gitconfig
+dot_npmrc
 {{- end }}
