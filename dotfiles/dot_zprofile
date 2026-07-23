@@ -27,7 +27,7 @@ autoload -Uz vcs_info
 precmd() { vcs_info }
 zstyle ':vcs_info:git:*' formats '(%b) '
 setopt PROMPT_SUBST
-# PROMPT='%F{36}%n%f:%F{208}~${PWD#$HOME}%f %F{178}${vcs_info_msg_0_}%f%F{12}#%f '
+PROMPT='%F{36}%n%f:%F{208}~${PWD#$HOME}%f %F{178}${vcs_info_msg_0_}%f%F{12}#%f '
 
 # go
 export PATH="$PATH:/usr/local/go/bin"
