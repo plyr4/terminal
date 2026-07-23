@@ -3,6 +3,7 @@ Include ~/.ssh/config.d/*.conf
 
 Host github.com
   IdentityFile ~/.ssh/id_ed25519_external
+  IdentitiesOnly yes
 
 Host *
   IgnoreUnknown UseKeychain
