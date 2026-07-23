@@ -11,6 +11,13 @@ elif [ -x /usr/local/bin/brew ]; then
 fi
 
 # Brewfile hash: {{ include (joinPath .chezmoi.sourceDir ".." "Brewfile") | sha256sum }}
+# trust all taps declared in the Brewfile before bundling
+grep -E '^tap "' {{ joinPath .chezmoi.sourceDir ".." "Brewfile" | quote }} \
+  | sed 's/tap "\([^"]*\)".*/\1/' \
+  | while IFS= read -r t; do
+      brew trust "$t" 2>/dev/null || true
+    done
+
 echo "installing Homebrew packages from Brewfile..."
 brew bundle --file={{ joinPath .chezmoi.sourceDir ".." "Brewfile" | quote }}
 {{ $local := joinPath .chezmoi.sourceDir ".." "Brewfile.local" -}}

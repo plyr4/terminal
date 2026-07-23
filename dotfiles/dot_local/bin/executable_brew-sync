@@ -1,0 +1,101 @@
+#!/usr/bin/env bash
+# brew-sync: interactively diff installed brew packages against your Brewfile
+# and choose which ones to add, one at a time.
+#
+# Usage:
+#   brew-sync                    # auto-detects Brewfile via chezmoi
+#   BREWFILE=/path/to/Brewfile brew-sync
+
+set -euo pipefail
+
+# --- locate Brewfile ---
+if [[ -n "${BREWFILE:-}" ]]; then
+  brewfile="$BREWFILE"
+elif command -v chezmoi &>/dev/null; then
+  brewfile="$(chezmoi source-path)/../Brewfile"
+else
+  echo "error: set BREWFILE env var or install chezmoi to auto-detect" >&2
+  exit 1
+fi
+
+brewfile="$(realpath "$brewfile")"
+
+if [[ ! -f "$brewfile" ]]; then
+  echo "error: Brewfile not found at $brewfile" >&2
+  exit 1
+fi
+
+echo "Brewfile: $brewfile"
+echo
+
+# --- get installed packages ---
+installed_formulae=$(brew leaves 2>/dev/null | sort)
+installed_casks=$(brew list --cask 2>/dev/null | sort)
+
+# --- parse what's already tracked ---
+tracked_formulae=$(grep -E '^brew "' "$brewfile" | sed 's/brew "\([^"]*\)".*/\1/' | sort)
+tracked_casks=$(grep -E '^cask "' "$brewfile" | sed 's/cask "\([^"]*\)".*/\1/' | sort)
+
+# --- diff: installed but not in Brewfile ---
+new_formulae=$(comm -23 <(echo "$installed_formulae") <(echo "$tracked_formulae") || true)
+new_casks=$(comm -23 <(echo "$installed_casks") <(echo "$tracked_casks") || true)
+
+if [[ -z "$new_formulae" && -z "$new_casks" ]]; then
+  echo "Nothing new — Brewfile is already up to date."
+  exit 0
+fi
+
+added=0
+
+prompt_add() {
+  local type="$1"
+  local pkg="$2"
+  local desc
+  desc=$(brew desc "$pkg" 2>/dev/null || true)
+  [[ -n "$desc" ]] && echo "  $desc"
+  while true; do
+    read -rp "  $type \"$pkg\" — add? [y/n/q] " choice </dev/tty
+    case "$choice" in
+      y|Y)
+        echo "$type \"$pkg\"" >> "$brewfile"
+        echo "  -> added"
+        added=$((added + 1))
+        return
+        ;;
+      n|N)
+        echo "  -> skipped"
+        return
+        ;;
+      q|Q)
+        echo
+        echo "Stopped early. $added package(s) added."
+        exit 0
+        ;;
+      *)
+        echo "  Enter y (add), n (skip), or q (quit)"
+        ;;
+    esac
+  done
+}
+
+if [[ -n "$new_formulae" ]]; then
+  echo "=== Formulae: installed but not tracked ==="
+  while IFS= read -r pkg; do
+    [[ -z "$pkg" ]] && continue
+    echo
+    prompt_add "brew" "$pkg"
+  done <<< "$new_formulae"
+  echo
+fi
+
+if [[ -n "$new_casks" ]]; then
+  echo "=== Casks: installed but not tracked ==="
+  while IFS= read -r pkg; do
+    [[ -z "$pkg" ]] && continue
+    echo
+    prompt_add "cask" "$pkg"
+  done <<< "$new_casks"
+  echo
+fi
+
+echo "Done. $added package(s) added to Brewfile."
