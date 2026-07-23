@@ -1,7 +1,7 @@
-sourceDir = {{ .chezmoi.sourceDir | quote }}
-
 {{- $work := promptBoolOnce . "work" "Is this a work machine" false -}}
 {{- $neovim := promptBoolOnce . "neovim" "Manage the neovim (AstroNvim) config" true -}}
+sourceDir = {{ .chezmoi.sourceDir | quote }}
+
 [data]
     work = {{ $work }}
     neovim = {{ $neovim }}

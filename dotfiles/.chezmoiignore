@@ -1,3 +1,8 @@
 {{- /* work-profile files are only applied when work=true (see chezmoi.toml). */ -}}
 {{- if not .work }}
+private_dot_ssh/private_config.d/target.conf
+dot_config/zsh/internal.zsh
+dot_config/git/ghec.gitconfig
+dot_config/git/internal.gitconfig
+dot_config/git/tgt.gitconfig
 {{- end }}
