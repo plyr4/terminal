@@ -7,7 +7,7 @@ theme = vader
 window-colorspace = display-p3
 font-thicken = true
 window-padding-x = 12
-window-padding-y = 4
+window-padding-y = 8
 
 # treat option as alt so shell alt-arrow word navigation works
 macos-option-as-alt = true
@@ -20,3 +20,6 @@ confirm-close-surface = false
 
 # macOS dock/app-switcher icon (uses ~/.config/ghostty/Ghostty.icns)
 macos-icon = custom
+
+# shaders
+custom-shader = ~/.config/ghostty/shaders/shader.glsl
