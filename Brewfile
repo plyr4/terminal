@@ -27,6 +27,9 @@ brew "python@3.12"
 brew "neovim"
 brew "tree-sitter"
 brew "lazygit"
+# vs code. the cask symlinks the `code` (and `code-tunnel`) CLI into
+# $(brew --prefix)/bin, which brew shellenv already puts on PATH.
+cask "visual-studio-code"
 
 # containers and vms
 brew "colima"
