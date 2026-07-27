@@ -15,6 +15,10 @@ chezmoi init --source . --apply .
 during `init` chezmoi will ask:
 - **Is this a work machine?** — default no
 - **Manage the neovim config?** — clones the AstroNvim fork into `~/.config/nvim`, default yes
+- **Terminal to install (kitty/ghostty)?** — default kitty
+- **GPG key ID for signing git commits?** — pre-filled with the local secret key matching your git
+  email (the IDs shown by `gpg --list-secret-keys --keyid-format=long`); press enter to accept, paste
+  a different ID, or leave blank to disable commit signing
 
 answers are saved in `~/.config/chezmoi/chezmoi.toml`
 
@@ -62,6 +66,26 @@ cd "$(chezmoi source-path)/.."
 brew bundle dump --force     # overwrite Brewfile from current machine state
 brew bundle check            # what's in Brewfile but missing?
 ```
+
+## Commit signing
+
+git commit signing is driven by the `signingkey` answer from `chezmoi init` and rendered into
+`~/.config/git/config`:
+
+- a non-empty key sets `user.signingkey` and `commit.gpgsign = true`
+- a blank answer sets `commit.gpgsign = false`, so commits still work on machines without your key
+
+on a new machine, import (or create) your key first, then run `chezmoi init` — the prompt
+auto-detects the secret key whose uid matches your git email:
+
+```sh
+gpg --list-secret-keys --keyid-format=long   # confirm the key is present
+chezmoi init                                 # accept the detected key at the prompt
+```
+
+`gnupg` is installed via the [`Brewfile`](Brewfile). if you pull this change onto a machine that was
+already set up, re-run `chezmoi init` once so the new `signingkey` value is written to your chezmoi
+config (existing answers are preserved).
 
 ## Secrets
 

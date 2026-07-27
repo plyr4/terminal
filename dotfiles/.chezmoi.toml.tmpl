@@ -1,12 +1,22 @@
 {{- $work := promptBoolOnce . "work" "Is this a work machine" false -}}
 {{- $neovim := promptBoolOnce . "neovim" "Manage the neovim (AstroNvim) config" true -}}
 {{- $terminal := promptStringOnce . "terminal" "Terminal to install (kitty/ghostty)" "kitty" -}}
+{{- /* Offer the local GPG secret key for davelvader@gmail.com as the default git
+       signing key (the key IDs shown by `gpg --list-secret-keys --keyid-format=long`).
+       Filtering by email picks the right key when several secret keys exist.
+       Leave the prompt blank to disable commit signing on this machine. */ -}}
+{{- $gpgkey := "" -}}
+{{- if lookPath "gpg" -}}
+{{-   $gpgkey = output "sh" "-c" "gpg --list-secret-keys --keyid-format=long davelvader@gmail.com 2>/dev/null | awk -F'[ /]+' '/^sec/{print $3; exit}'" | trim -}}
+{{- end -}}
+{{- $signingkey := promptStringOnce . "signingkey" "GPG key ID for signing git commits (blank to disable)" $gpgkey -}}
 sourceDir = {{ .chezmoi.sourceDir | quote }}
 
 [data]
     work = {{ $work }}
     neovim = {{ $neovim }}
     terminal = {{ $terminal | quote }}
+    signingkey = {{ $signingkey | quote }}
 
 # Encrypted secrets (optional). To manage files with `chezmoi add --encrypt`,
 # generate an age key once:
