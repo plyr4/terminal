@@ -13,11 +13,13 @@ base64url::decode() {
 # avoid objc fork crashes with tools like Ansible on macos
 export OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES
 
+{{- if eq .terminal "kitty" }}
 # kitty: bash-style word boundaries and alt-arrow word navigation
 autoload -U select-word-style
 select-word-style bash
 bindkey "\e[1;3D" backward-word
 bindkey "\e[1;3C" forward-word
+{{- end }}
 
 # kubernetes: merge kubeconfig files if present
 export KUBECONFIG="${HOME}/.kube/config:${HOME}/.kube/config-contexts:${HOME}/.kube/config-base"
