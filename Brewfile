@@ -39,8 +39,8 @@ brew "qemu"
 brew "zsh-autosuggestions"
 brew "zsh-syntax-highlighting"
 
-# terminal emulator and font
-cask "kitty"
+# terminal font (the terminal emulator itself — kitty or ghostty — is installed
+# by the brew-bundle bootstrap script based on the `terminal` chezmoi choice)
 cask "font-jetbrains-mono-nerd-font"
 brew "act"
 brew "bfg"

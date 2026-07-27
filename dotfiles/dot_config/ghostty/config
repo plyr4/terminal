@@ -1,0 +1,12 @@
+# font
+font-family = JetBrainsMono Nerd Font
+font-size = 14
+
+# treat option as alt so shell alt-arrow word navigation works
+macos-option-as-alt = true
+
+# scrollback (ghostty measures the scrollback buffer in bytes, not lines)
+scrollback-limit = 10000000
+
+# behavior (audio bell is already off by default in ghostty)
+confirm-close-surface = false

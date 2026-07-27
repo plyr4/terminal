@@ -20,6 +20,13 @@ grep -E '^tap "' {{ joinPath .chezmoi.sourceDir ".." "Brewfile" | quote }} \
 
 echo "installing Homebrew packages from Brewfile..."
 brew bundle --file={{ joinPath .chezmoi.sourceDir ".." "Brewfile" | quote }}
+
+# install the terminal emulator chosen at `chezmoi init` (see .chezmoi.toml.tmpl).
+# re-runs automatically if the `terminal` choice changes (rendered content differs).
+{{ if or (eq .terminal "kitty") (eq .terminal "ghostty") -}}
+echo "installing {{ .terminal }} (chosen terminal)..."
+echo 'cask "{{ .terminal }}"' | brew bundle --file=-
+{{ end -}}
 {{ $local := joinPath .chezmoi.sourceDir ".." "Brewfile.local" -}}
 {{ if stat $local }}
 # optional machine-local packages (git-ignored)
