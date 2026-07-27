@@ -1,10 +1,10 @@
 #define ROLLING_SQUARE_SIZE        25.0
 #define ROLLING_SQUARE_SPEED       50.0
-#define ROLLING_SQUARE_BASE_Y      5.0
+#define ROLLING_SQUARE_BASE_Y      3.0
 #define ROLLING_SQUARE_EDGE_SOFT   2.0
-#define ROLLING_SQUARE_PAUSE_TIME  10.0
+#define ROLLING_SQUARE_PAUSE_TIME  6.0
 #define ROLLING_SQUARE_COUNT       2
-#define ROLLING_SQUARE_SPACING     12300.0
+#define ROLLING_SQUARE_SPACING     10000.0
 
 const vec3 colorPalette[] = vec3[](
     vec3(0.40, 0.05, 0.85),
