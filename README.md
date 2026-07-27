@@ -19,6 +19,9 @@ during `init` chezmoi will ask:
 - **GPG key ID for signing git commits?** — pre-filled with the local secret key matching your git
   email (the IDs shown by `gpg --list-secret-keys --keyid-format=long`); press enter to accept, paste
   a different ID, or leave blank to disable commit signing
+- **GPG key ID for internal/work repos?** — pre-filled with the local secret key matching your work git
+  email (`david.vader@target.com`); used for GHEC and internal Target repos; press enter to accept, paste
+  a different ID, or leave blank to disable commit signing on internal repos
 
 answers are saved in `~/.config/chezmoi/chezmoi.toml`
 
@@ -77,22 +80,27 @@ brew bundle check            # what's in Brewfile but missing?
 
 ## Commit signing
 
-git commit signing is driven by the `signingkey` answer from `chezmoi init` and rendered into
-`~/.config/git/config`:
+git commit signing is driven by two separate GPG keys configured during `chezmoi init`:
 
+**Personal repos** — uses the `signingkey` answer and rendered into `~/.config/git/config`:
 - a non-empty key sets `user.signingkey` and `commit.gpgsign = true`
 - a blank answer sets `commit.gpgsign = false`, so commits still work on machines without your key
 
-on a new machine, import (or create) your key first, then run `chezmoi init` — the prompt
-auto-detects the secret key whose uid matches your git email:
+**Internal/work repos** — uses the `internalsigningkey` answer and rendered into `~/.config/git/ghec.gitconfig` and `~/.config/git/tgt.gitconfig`:
+- applies to repos under `~/dev/github.com/target-corp/`, `~/dev/github.com/target-corp-eng/`, `~/dev/github.com/target-corp-test/`, and `~/dev/git.target.com/`
+- a non-empty key sets `user.signingkey` and `commit.gpgsign = true` for these repos
+- a blank answer disables commit signing on internal repos
+
+on a new machine, import (or create) your keys first, then run `chezmoi init` — the prompt
+auto-detects the secret keys whose uids match your git emails:
 
 ```sh
-gpg --list-secret-keys --keyid-format=long   # confirm the key is present
-chezmoi init                                 # accept the detected key at the prompt
+gpg --list-secret-keys --keyid-format=long   # confirm the keys are present
+chezmoi init                                 # accept the detected keys at the prompts
 ```
 
 `gnupg` is installed via the [`Brewfile`](Brewfile). if you pull this change onto a machine that was
-already set up, re-run `chezmoi init` once so the new `signingkey` value is written to your chezmoi
+already set up, re-run `chezmoi init` once so the new `internalsigningkey` value is written to your chezmoi
 config (existing answers are preserved).
 
 ## Secrets

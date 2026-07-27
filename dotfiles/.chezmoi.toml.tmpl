@@ -10,6 +10,15 @@
 {{-   $gpgkey = output "sh" "-c" "gpg --list-secret-keys --keyid-format=long davelvader@gmail.com 2>/dev/null | awk -F'[ /]+' '/^sec/{print $3; exit}'" | trim -}}
 {{- end -}}
 {{- $signingkey := promptStringOnce . "signingkey" "GPG key ID for signing git commits (blank to disable)" $gpgkey -}}
+{{- /* Offer the local GPG secret key for david.vader@target.com as the internal/work git
+       signing key (the key IDs shown by `gpg --list-secret-keys --keyid-format=long`).
+       Filtering by email picks the right key when several secret keys exist.
+       Leave the prompt blank to disable commit signing on internal/work repos. */ -}}
+{{- $internalgpgkey := "" -}}
+{{- if lookPath "gpg" -}}
+{{-   $internalgpgkey = output "sh" "-c" "gpg --list-secret-keys --keyid-format=long david.vader@target.com 2>/dev/null | awk -F'[ /]+' '/^sec/{print $3; exit}'" | trim -}}
+{{- end -}}
+{{- $internalsigningkey := promptStringOnce . "internalsigningkey" "GPG key ID for internal/work repos (blank to disable)" $internalgpgkey -}}
 sourceDir = {{ .chezmoi.sourceDir | quote }}
 
 [data]
@@ -17,6 +26,7 @@ sourceDir = {{ .chezmoi.sourceDir | quote }}
     neovim = {{ $neovim }}
     terminal = {{ $terminal | quote }}
     signingkey = {{ $signingkey | quote }}
+    internalsigningkey = {{ $internalsigningkey | quote }}
 
 # Encrypted secrets (optional). To manage files with `chezmoi add --encrypt`,
 # generate an age key once:

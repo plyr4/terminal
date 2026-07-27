@@ -1,0 +1,15 @@
+[user]
+	name = z0031t3
+	email = david.vader@target.com
+{{- $internalsigningkey := "" }}
+{{- if hasKey . "internalsigningkey" }}{{ $internalsigningkey = .internalsigningkey }}{{ end }}
+{{- if $internalsigningkey }}
+	signingkey = {{ $internalsigningkey }}
+{{- end }}
+
+[commit]
+{{- if $internalsigningkey }}
+	gpgsign = true
+{{- else }}
+	gpgsign = false
+{{- end }}
