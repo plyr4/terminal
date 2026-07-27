@@ -1,3 +1,10 @@
 {{- /* work-profile files are only applied when work=true (see chezmoi.toml). */ -}}
 {{- if not .work }}
 {{- end }}
+{{- /* only the chosen terminal config is applied. */ -}}
+{{- if ne .terminal "kitty" }}
+.config/kitty
+{{- end }}
+{{- if ne .terminal "ghostty" }}
+.config/ghostty
+{{- end }}

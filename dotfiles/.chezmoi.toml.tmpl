@@ -2,9 +2,11 @@ sourceDir = {{ .chezmoi.sourceDir | quote }}
 
 {{- $work := promptBoolOnce . "work" "Is this a work machine" false -}}
 {{- $neovim := promptBoolOnce . "neovim" "Manage the neovim (AstroNvim) config" true -}}
+{{- $terminal := promptStringOnce . "terminal" "Terminal to install (kitty/ghostty)" "kitty" -}}
 [data]
     work = {{ $work }}
     neovim = {{ $neovim }}
+    terminal = {{ $terminal | quote }}
 
 # Encrypted secrets (optional). To manage files with `chezmoi add --encrypt`,
 # generate an age key once:
