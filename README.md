@@ -59,6 +59,11 @@ chezmoi names it automatically (`dot_`, `private_`, `executable_`, …). Commit 
 
 [`Brewfile`](Brewfile) is the source of truth. `chezmoi apply` runs `brew bundle` automatically when it changes
 
+the terminal emulator itself (`kitty` or `ghostty`) is **not** in the `Brewfile` — it's installed by the
+brew-bundle bootstrap script based on the `terminal` answer from `chezmoi init`. switching terminals means
+re-running `chezmoi init` (so the saved choice changes) then `chezmoi apply`. the previous terminal is not
+uninstalled automatically (`brew uninstall --cask kitty` to remove it).
+
 to capture packages installed by hand:
 
 ```sh
@@ -66,6 +71,9 @@ cd "$(chezmoi source-path)/.."
 brew bundle dump --force     # overwrite Brewfile from current machine state
 brew bundle check            # what's in Brewfile but missing?
 ```
+
+> `brew bundle dump --force` will re-add the currently installed terminal cask(s) to the `Brewfile`.
+> remove the `cask "kitty"`/`cask "ghostty"` line afterward so the terminal stays driven by `terminal`.
 
 ## Commit signing
 
