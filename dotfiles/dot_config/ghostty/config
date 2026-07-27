@@ -2,6 +2,9 @@
 font-family = JetBrainsMono Nerd Font
 font-size = 14
 
+# colors (match kitty default appearance)
+theme = dark
+
 # treat option as alt so shell alt-arrow word navigation works
 macos-option-as-alt = true
 
