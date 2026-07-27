@@ -44,7 +44,7 @@ brew "zsh-syntax-highlighting"
 
 # terminal font (the terminal emulator itself — kitty or ghostty — is installed
 # by the brew-bundle bootstrap script based on the `terminal` chezmoi choice)
-cask "font-jetbrains-mono-nerd-font"
+# cask "font-jetbrains-mono-nerd-font"
 brew "act"
 brew "bfg"
 brew "brotli"
