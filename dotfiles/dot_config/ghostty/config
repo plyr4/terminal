@@ -2,8 +2,12 @@
 font-family = JetBrainsMono Nerd Font
 font-size = 14
 
-# colors (match kitty default appearance)
-theme = dark
+# window style
+theme = vader
+window-colorspace = display-p3
+font-thicken = true
+window-padding-x = 12
+window-padding-y = 4
 
 # treat option as alt so shell alt-arrow word navigation works
 macos-option-as-alt = true
