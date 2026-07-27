@@ -10,3 +10,6 @@ scrollback-limit = 10000000
 
 # behavior (audio bell is already off by default in ghostty)
 confirm-close-surface = false
+
+# macOS dock/app-switcher icon (uses ~/.config/ghostty/Ghostty.icns)
+macos-icon = custom
