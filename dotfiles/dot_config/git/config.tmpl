@@ -1,10 +1,18 @@
 [user]
 	name = plyr4
 	email = davelvader@gmail.com
-	signingkey = BFC28087CB91E7EA
+{{- $signingkey := "" }}
+{{- if hasKey . "signingkey" }}{{ $signingkey = .signingkey }}{{ end }}
+{{- if $signingkey }}
+	signingkey = {{ $signingkey }}
+{{- end }}
 
 [commit]
+{{- if $signingkey }}
 	gpgsign = true
+{{- else }}
+	gpgsign = false
+{{- end }}
 
 [push]
 	default = simple
