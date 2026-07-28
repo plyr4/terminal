@@ -37,7 +37,6 @@ float hash1D(float x) {
 }
 
 vec3 getPaletteColor(int index) {
-    // Safe modulo — handles negative index without UB on Metal/macOS.
     return colorPalette[((index % PALETTE_COUNT) + PALETTE_COUNT) % PALETTE_COUNT];
 }
 
