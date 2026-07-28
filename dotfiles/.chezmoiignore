@@ -13,4 +13,5 @@ dot_npmrc
 {{- end }}
 {{- if ne .terminal "ghostty" }}
 .config/ghostty
+.config/zsh/ghostty-shader.zsh
 {{- end }}
