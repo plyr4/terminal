@@ -45,6 +45,14 @@ if [[ "$TERM_PROGRAM" == "ghostty" ]]; then
 		done
 	}
 
+	function _gc_roll_reverse() {
+		local -i start=$1 i
+		for (( i = 1; i <= _GC_STEPS; i++ )); do
+			zselect -t $_GC_STEP_CS
+			_gc_emit_counter $(( (start - i + 512) % 512 ))
+		done
+	}
+
 	function _gc_self_insert() {
 		local -F now=$EPOCHREALTIME
 		# Keystrokes arriving mid-roll are ignored outright.
@@ -57,7 +65,19 @@ if [[ "$TERM_PROGRAM" == "ghostty" ]]; then
 		zle .self-insert "$@"
 	}
 
+	function _gc_backspace() {
+		local -F now=$EPOCHREALTIME
+		if (( now >= _GC_NEXT_ALLOWED )); then
+			(( _GC_NEXT_ALLOWED = now + _GC_ROLL_DURATION ))
+			local -i start=$_GC_COUNTER
+			(( _GC_COUNTER = (_GC_COUNTER - _GC_STEPS + 512) % 512 ))
+			_gc_roll_reverse $start &!
+		fi
+		zle .backward-delete-char "$@"
+	}
+
 	zle -N self-insert _gc_self_insert
+	zle -N backward-delete-char _gc_backspace
 
 	# Prime the shader once per shell so it has a valid signal to decode.
 	_gc_emit_counter $_GC_COUNTER
