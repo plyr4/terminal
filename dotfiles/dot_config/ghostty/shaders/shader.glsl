@@ -1,9 +1,10 @@
-#define ROLLING_SQUARE_SIZE          25.0
+#define ROLLING_SQUARE_SIZE          50.0
 #define ROLLING_SQUARE_BASE_Y        5.0
 #define ROLLING_SQUARE_EDGE_SOFT     2.0
-#define ROLLING_SQUARE_START_X       40.0
+#define ROLLING_SQUARE_START_X       0.0
 #define ROLL_STEPS                   8.0
-#define ROLLING_WRAP                 1600.0
+#define ROLLING_WRAP                 3200.0
+#define REFERENCE_HEIGHT             1080.0
 
 const vec3 colorPalette[] = vec3[](
     vec3(0.40, 0.05, 0.85),
@@ -52,13 +53,14 @@ float boxDistance(vec2 p, vec2 halfSize) {
     return length(max(d, 0.0)) + min(max(d.x, d.y), 0.0);
 }
 
-float rollingSquareDistance(vec2 p, float squareX, float rollProgress) {
-    float halfSize = ROLLING_SQUARE_SIZE * 0.5;
+float rollingSquareDistance(vec2 p, float squareX, float rollProgress, float scale) {
+    float halfSize = ROLLING_SQUARE_SIZE * scale * 0.5;
     float halfPI   = 1.5707963267948966;
-    float squareY  = ROLLING_SQUARE_BASE_Y + halfSize;
+    float baseY    = ROLLING_SQUARE_BASE_Y * scale;
+    float squareY  = baseY + halfSize;
 
     float rotationAngle = rollProgress * halfPI;
-    vec2  pivotPoint    = vec2(squareX + halfSize, ROLLING_SQUARE_BASE_Y);
+    vec2  pivotPoint    = vec2(squareX + halfSize, baseY);
     vec2  squareCenter  = vec2(squareX, squareY);
 
     vec2  rotatedP = rotate(p, rotationAngle, pivotPoint);
@@ -66,8 +68,9 @@ float rollingSquareDistance(vec2 p, float squareX, float rollProgress) {
 }
 
 void mainImage(out vec4 fragColor, in vec2 fragCoord) {
+    float scale    = iResolution.y / REFERENCE_HEIGHT;
     vec2 uv        = fragCoord / iResolution.xy;
-    vec2 pixCoord  = floor(fragCoord / PIXEL_SIZE) * PIXEL_SIZE;
+    vec2 pixCoord  = floor(fragCoord / (PIXEL_SIZE * scale)) * (PIXEL_SIZE * scale);
     vec4 termColor = texture(iChannel0, uv);
 
     float turns = decodedTurns(decodeSignalCounter(iCurrentCursorColor.rgb));
@@ -75,14 +78,14 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
     float completedRolls = floor(turns);
     float rollProgress   = fract(turns);
 
-    float squareX = mod(ROLLING_SQUARE_START_X + completedRolls * ROLLING_SQUARE_SIZE,
-                        ROLLING_WRAP);
+    float squareX = mod(ROLLING_SQUARE_START_X * scale + completedRolls * ROLLING_SQUARE_SIZE * scale,
+                        ROLLING_WRAP * scale);
 
     vec2  px = vec2(pixCoord.x, iResolution.y - pixCoord.y);
-    float d  = rollingSquareDistance(px, squareX, rollProgress);
+    float d  = rollingSquareDistance(px, squareX, rollProgress, scale);
 
-    float varyEdgeSoft = ROLLING_SQUARE_EDGE_SOFT * (0.6 + 0.6 * hash1D(px.x * 0.005));
-    float varyWaveFreq = 1.0 + 0.5 * sin(px.x * 0.002 + iTime * 0.3);
+    float varyEdgeSoft = ROLLING_SQUARE_EDGE_SOFT * scale * (0.6 + 0.6 * hash1D(px.x / scale * 0.005));
+    float varyWaveFreq = 1.0 + 0.5 * sin(px.x / scale * 0.002 + iTime * 0.3);
     float wave = 1.0 - smoothstep(-varyEdgeSoft, varyEdgeSoft, d * varyWaveFreq);
 
     vec3 resultColor = termColor.rgb;
