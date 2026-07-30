@@ -10,9 +10,9 @@ export GOPROXY="https://binrepo.target.com/artifactory/golang-remote,https://bin
 export GONOSUMDB="git.target.com,github.com/target-corp"
 
 # ssl certificate bundle
-export NODE_EXTRA_CA_CERTS="${HOME}/tgt-ca-bundle.crt"
 export SSL_CERT_DIR="${XDG_CONFIG_HOME:-${HOME}/.config}/target/certs/"
 export SSL_CERT_FILE="${SSL_CERT_DIR}tgt-ca-bundle.crt"
+export NODE_EXTRA_CA_CERTS="${SSL_CERT_FILE}"
 export TGT_CA_BUNDLE="${SSL_CERT_FILE}"
 export PIP_CERT="${SSL_CERT_FILE}"
 export REQUESTS_CA_BUNDLE="${SSL_CERT_FILE}"
