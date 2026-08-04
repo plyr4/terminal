@@ -3,22 +3,11 @@ if [[ "$TERM_PROGRAM" == "ghostty" ]]; then
 	zmodload -i zsh/zselect
 
 	typeset -gi _GC_STEPS=8
-	typeset -gi _GC_SQUARE_SIZE=50
-	typeset -gi _GC_BASE_WRAP_DISTANCE=2400
-	typeset -gi _GC_EXTRA_WRAP_DISTANCE=0
+	typeset -gi _GC_WRAP_SLOTS=48
 	typeset -gi _GC_STEP_CS=1
 	typeset -gF _GC_ROLL_DURATION=0.12
 	typeset -gF _GC_NEXT_ALLOWED=0
-	typeset -gi _GC_MAX_WRAP_DISTANCE=$(( (512 / _GC_STEPS) * _GC_SQUARE_SIZE ))
-	typeset -gi _GC_DESIRED_WRAP_DISTANCE=$(( _GC_BASE_WRAP_DISTANCE + _GC_EXTRA_WRAP_DISTANCE ))
-	typeset -gi _GC_WRAP_DISTANCE=$(( (_GC_DESIRED_WRAP_DISTANCE / _GC_SQUARE_SIZE) * _GC_SQUARE_SIZE ))
-	if (( _GC_WRAP_DISTANCE < _GC_SQUARE_SIZE )); then
-		_GC_WRAP_DISTANCE=$_GC_SQUARE_SIZE
-	fi
-	if (( _GC_WRAP_DISTANCE > _GC_MAX_WRAP_DISTANCE )); then
-		_GC_WRAP_DISTANCE=$_GC_MAX_WRAP_DISTANCE
-	fi
-	typeset -gi _GC_COUNTER_MOD=$(( (_GC_WRAP_DISTANCE / _GC_SQUARE_SIZE) * _GC_STEPS ))
+	typeset -gi _GC_COUNTER_MOD=$(( _GC_WRAP_SLOTS * _GC_STEPS ))
 	typeset -gi _GC_COUNTER=0
 
 	function _gc_emit_counter() {
