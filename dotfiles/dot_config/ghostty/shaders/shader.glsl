@@ -1,11 +1,11 @@
 #define CURSOR_HEIGHT_FALLBACK              17.0
-#define ROLLING_SQUARE_SIZE_CH              0.875
-#define ROLLING_SQUARE_BASE_Y_CH            0.30
+#define ROLLING_SQUARE_SIZE_CH              0.8
+#define ROLLING_SQUARE_BASE_Y_CH            0.15
 #define ROLLING_SQUARE_EDGE_SOFT_CH         0.12
 #define ROLLING_SQUARE_START_X              0.0
 #define ROLL_STEPS                          8.0
 #define WRAP_SLOT_COUNT                     48.0
-#define PIXEL_SIZE                          3.0
+#define PIXEL_SIZE                          1.5
 #define EDGE_SOFT_BASE                      0.6
 #define EDGE_SOFT_VARIATION                 0.6
 #define EDGE_HASH_SCALE_X                   0.005
