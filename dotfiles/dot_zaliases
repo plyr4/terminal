@@ -40,7 +40,9 @@ alias ....='cd ../../../../'
 alias .4='cd ../../../../'
 alias .5='cd ../../../../..'
 alias cdd='cd ~/dev'
-alias cde='cdd; cd github.com'
+alias cdgh='cdd; cd github.com;'
+alias cde='cdd; cd github.com; cd target-corp;'
+alias cdc='cdd; cd github.com; cd target-corp; cd console;'
 
 # git
 alias git-stash-staged='git stash -- $(git diff --staged --name-only)'
