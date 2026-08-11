@@ -1,0 +1,204 @@
+#!/usr/bin/env zsh
+# npm-guard-test: smoke-test matrix for the pnpm-guard functions.
+#
+# Sources the pure detection/classification helpers in isolation (no nvm, no
+# real npm invocation) and exercises them against temporary fixture directories.
+#
+# Usage:
+#   npm-guard-test            # normal output
+#   npm-guard-test --verbose  # print each test case
+
+VERBOSE=0
+[[ "${1:-}" == "--verbose" ]] && VERBOSE=1
+
+# --- locate guard file ---
+GUARD_FILE="${GUARD_FILE:-${${(%):-%x}:h:h:h}/dot_config/zsh/pnpm-guard.zsh}"
+if [[ ! -f "$GUARD_FILE" ]]; then
+  GUARD_FILE="$HOME/.config/zsh/pnpm-guard.zsh"
+fi
+if [[ ! -f "$GUARD_FILE" ]]; then
+  echo "error: cannot find pnpm-guard.zsh (set GUARD_FILE= to override)" >&2
+  exit 1
+fi
+
+# Source only the pure helpers; skip the npm() wrapper and _load_nvm patch to
+# avoid touching nvm or redefining npm in this test process.
+eval "$(awk '/^# _npm_guard_intercept/,0 { next } { print }' "$GUARD_FILE")"
+
+# --- test harness ---
+PASS=0; FAIL=0
+
+_assert_raw() {
+  local desc="$1" expected="$2" exit_code="$3" actual="$4"
+  local ok=0
+  if [[ "$expected" == "EXIT:0" && $exit_code -eq 0 ]]; then
+    ok=1
+  elif [[ "$expected" == "EXIT:1" && $exit_code -ne 0 ]]; then
+    ok=1
+  elif [[ "$expected" == CONTAINS:* && "$actual" == *"${expected#CONTAINS:}"* ]]; then
+    ok=1
+  fi
+
+  if [[ $ok -eq 1 ]]; then
+    (( PASS++ )) || true
+    [[ $VERBOSE -eq 1 ]] && printf '  PASS  %s\n' "$desc"
+  else
+    (( FAIL++ )) || true
+    printf '  FAIL  %s\n' "$desc" >&2
+    printf '        expected: %s\n' "$expected" >&2
+    printf '        got exit=%s output=%q\n' "$exit_code" "$actual" >&2
+  fi
+}
+
+# _detect_from: run _npm_pnpm_root from a given directory.
+_detect_from() {
+  (cd "$1" && _npm_pnpm_root)
+}
+
+# _detect_exit: echo "0" or "1" for whether _npm_pnpm_root detects a pnpm project.
+_detect_exit() {
+  local e=0
+  (cd "$1" && _npm_pnpm_root >/dev/null 2>&1) || e=$?
+  echo $e
+}
+
+# _dep_exit: echo "0" if args represent a guarded dep command, "1" otherwise.
+_dep_exit() {
+  local e=0
+  _npm_is_dep_cmd "$@" || e=$?
+  echo $e
+}
+
+# --- fixtures ---
+TMP="$(mktemp -d)"
+trap 'rm -rf "$TMP"' EXIT
+
+mkdir -p "$TMP/plain"
+
+mkdir -p "$TMP/npm-project"
+echo '{}' > "$TMP/npm-project/package.json"
+touch "$TMP/npm-project/package-lock.json"
+
+mkdir -p "$TMP/pnpm-lock-project"
+touch "$TMP/pnpm-lock-project/pnpm-lock.yaml"
+
+mkdir -p "$TMP/pnpm-workspace-project"
+touch "$TMP/pnpm-workspace-project/pnpm-workspace.yaml"
+
+mkdir -p "$TMP/pnpm-pkgjson-project"
+printf '{"packageManager":"pnpm@8.15.0"}\n' > "$TMP/pnpm-pkgjson-project/package.json"
+
+mkdir -p "$TMP/monorepo/packages/ui/src"
+touch "$TMP/monorepo/pnpm-lock.yaml"
+printf '{"name":"@scope/ui"}\n' > "$TMP/monorepo/packages/ui/package.json"
+
+mkdir -p "$TMP/monorepo-pkgjson/packages/api"
+printf '{"packageManager":"pnpm@9.0.0"}\n' > "$TMP/monorepo-pkgjson/package.json"
+printf '{"name":"@scope/api"}\n' > "$TMP/monorepo-pkgjson/packages/api/package.json"
+
+# --- detection tests ---
+printf '\nDetection\n'
+
+_assert_raw "plain dir: no pnpm detected" \
+  "EXIT:1" "$(_detect_exit "$TMP/plain")" ""
+
+_assert_raw "npm-only project: not detected as pnpm" \
+  "EXIT:1" "$(_detect_exit "$TMP/npm-project")" ""
+
+_assert_raw "pnpm-lock.yaml: detected" \
+  "EXIT:0" "$(_detect_exit "$TMP/pnpm-lock-project")" ""
+
+_assert_raw "pnpm-workspace.yaml: detected" \
+  "EXIT:0" "$(_detect_exit "$TMP/pnpm-workspace-project")" ""
+
+_assert_raw "packageManager field: detected" \
+  "EXIT:0" "$(_detect_exit "$TMP/pnpm-pkgjson-project")" ""
+
+_assert_raw "monorepo nested dir: detected via root pnpm-lock.yaml" \
+  "EXIT:0" "$(_detect_exit "$TMP/monorepo/packages/ui/src")" ""
+
+_assert_raw "monorepo nested dir: detected via root packageManager" \
+  "EXIT:0" "$(_detect_exit "$TMP/monorepo-pkgjson/packages/api")" ""
+
+_assert_raw "pnpm-lock.yaml: signal label correct" \
+  "CONTAINS:pnpm-lock.yaml" "0" "$(_detect_from "$TMP/pnpm-lock-project")"
+
+_assert_raw "packageManager: signal label correct" \
+  "CONTAINS:package.json#packageManager" "0" "$(_detect_from "$TMP/pnpm-pkgjson-project")"
+
+_assert_raw "pnpm-lock.yaml: project root reported correctly" \
+  "CONTAINS:$TMP/pnpm-lock-project" "0" "$(_detect_from "$TMP/pnpm-lock-project")"
+
+_assert_raw "monorepo: root path reported (not nested subdir)" \
+  "CONTAINS:$TMP/monorepo" "0" "$(_detect_from "$TMP/monorepo/packages/ui/src")"
+
+# --- command classification tests ---
+printf '\nCommand classification\n'
+
+_assert_raw "npm install: guarded"       "EXIT:0" "$(_dep_exit install)"              ""
+_assert_raw "npm i: guarded"             "EXIT:0" "$(_dep_exit i)"                    ""
+_assert_raw "npm i foo: guarded"         "EXIT:0" "$(_dep_exit i foo)"                ""
+_assert_raw "npm i -D foo: guarded"      "EXIT:0" "$(_dep_exit i -D foo)"             ""
+_assert_raw "npm ci: guarded"            "EXIT:0" "$(_dep_exit ci)"                   ""
+_assert_raw "npm add foo: guarded"       "EXIT:0" "$(_dep_exit add foo)"              ""
+_assert_raw "npm uninstall foo: guarded" "EXIT:0" "$(_dep_exit uninstall foo)"        ""
+_assert_raw "npm remove foo: guarded"    "EXIT:0" "$(_dep_exit remove foo)"           ""
+_assert_raw "npm rm foo: guarded"        "EXIT:0" "$(_dep_exit rm foo)"               ""
+_assert_raw "npm update: guarded"        "EXIT:0" "$(_dep_exit update)"               ""
+_assert_raw "npm dedupe: guarded"        "EXIT:0" "$(_dep_exit dedupe)"               ""
+_assert_raw "npm --loglevel=v install: guarded (flag before subcmd)" \
+  "EXIT:0" "$(_dep_exit --loglevel=verbose install)"                                  ""
+
+_assert_raw "npm --version: not guarded" "EXIT:1" "$(_dep_exit --version)"            ""
+_assert_raw "npm -v: not guarded"        "EXIT:1" "$(_dep_exit -v)"                   ""
+_assert_raw "npm version: not guarded"   "EXIT:1" "$(_dep_exit version)"              ""
+_assert_raw "npm help: not guarded"      "EXIT:1" "$(_dep_exit help)"                 ""
+_assert_raw "npm config: not guarded"    "EXIT:1" "$(_dep_exit config)"               ""
+_assert_raw "npm publish: not guarded"   "EXIT:1" "$(_dep_exit publish)"              ""
+_assert_raw "npm run build: not guarded" "EXIT:1" "$(_dep_exit run build)"            ""
+_assert_raw "npm test: not guarded"      "EXIT:1" "$(_dep_exit test)"                 ""
+_assert_raw "npm whoami: not guarded"    "EXIT:1" "$(_dep_exit whoami)"               ""
+_assert_raw "npm (no args): not guarded" "EXIT:1" "$(_dep_exit)"                      ""
+
+# --- escape hatch ---
+printf '\nEscape hatch\n'
+
+_assert_raw "--allow-npm before subcmd: bypasses guard" \
+  "EXIT:1" "$(_dep_exit --allow-npm install)" ""
+
+_assert_raw "--allow-npm after subcmd: bypasses guard" \
+  "EXIT:1" "$(_dep_exit install --allow-npm foo)" ""
+
+# --- suggestion tests ---
+printf '\nSuggestions\n'
+
+_assert_raw "npm install -> pnpm install" \
+  "CONTAINS:pnpm install" "0" "$(_npm_pnpm_suggestion install)"
+
+_assert_raw "npm i lodash -> pnpm add lodash" \
+  "CONTAINS:pnpm add lodash" "0" "$(_npm_pnpm_suggestion i lodash)"
+
+_assert_raw "npm i -D lodash -> pnpm add -D lodash" \
+  "CONTAINS:pnpm add -D lodash" "0" "$(_npm_pnpm_suggestion i -D lodash)"
+
+_assert_raw "npm install --save-dev foo -> pnpm add --save-dev foo" \
+  "CONTAINS:pnpm add --save-dev foo" "0" "$(_npm_pnpm_suggestion install --save-dev foo)"
+
+_assert_raw "npm ci -> pnpm install --frozen-lockfile" \
+  "CONTAINS:pnpm install --frozen-lockfile" "0" "$(_npm_pnpm_suggestion ci)"
+
+_assert_raw "npm uninstall foo -> pnpm remove foo" \
+  "CONTAINS:pnpm remove foo" "0" "$(_npm_pnpm_suggestion uninstall foo)"
+
+_assert_raw "npm update -> pnpm update" \
+  "CONTAINS:pnpm update" "0" "$(_npm_pnpm_suggestion update)"
+
+_assert_raw "npm dedupe -> pnpm dedupe" \
+  "CONTAINS:pnpm dedupe" "0" "$(_npm_pnpm_suggestion dedupe)"
+
+_assert_raw "npm install --production -> pnpm install --production (flags only)" \
+  "CONTAINS:pnpm install --production" "0" "$(_npm_pnpm_suggestion install --production)"
+
+# --- summary ---
+printf '\n%d passed, %d failed\n' "$PASS" "$FAIL"
+[[ $FAIL -eq 0 ]]

@@ -132,16 +132,10 @@ _npm_pnpm_suggestion() {
   esac
 }
 
-# npm: wrapper around the real npm binary.
-#
-# When the subcommand is a dependency-management operation AND the current
-# working directory is inside a pnpm-managed project, the command is blocked
-# and a warning with the pnpm equivalent is printed to stderr.
-#
-# This function supersedes the nvm lazy-loader defined in ~/.zprofile. The
-# passthrough path re-invokes nvm's _load_nvm if it is still present so that
-# the real npm binary is properly resolved before execution.
-npm() {
+# _npm_guard_intercept: run the guard check for a given set of npm args.
+# Prints the pnpm warning to stderr and returns 0 if the invocation should be
+# blocked; returns 1 if it should pass through to the real npm binary.
+_npm_guard_intercept() {
   local pnpm_info="" is_dep_cmd=0
   _npm_is_dep_cmd "$@" && is_dep_cmd=1
 
@@ -180,13 +174,30 @@ npm() {
     printf '\n' >&2
     printf 'Detected: %s\n' "$signal" >&2
     printf 'Project:  %s\n\n' "$proj_root" >&2
-    return 1
+    return 0
   fi
 
-  # Passthrough: strip --allow-npm before forwarding to the real npm binary.
-  # If nvm's lazy-loader is still active (_load_nvm is defined), invoke it now
-  # so the real npm binary is in PATH; _load_nvm unsets this npm() function as
-  # a side effect, so the subsequent `npm` call resolves to the binary.
+  return 1
+}
+
+# _npm_guard_register: (re-)installs the npm() wrapper for the state where nvm
+# is already loaded. Patched into _load_nvm below so that nvm's own
+# `unset -f npm` (which runs on every _load_nvm call) doesn't permanently
+# remove the guard.
+_npm_guard_register() {
+  npm() {
+    _npm_guard_intercept "$@" && return 1
+    local real_args=("${(@)@:#--allow-npm}")
+    command npm "${real_args[@]}"
+  }
+}
+
+# npm: initial wrapper, active before nvm's lazy-loader has ever fired.
+# The passthrough triggers _load_nvm, which (via the patch below) will call
+# _npm_guard_register to replace this wrapper with the simpler post-load version
+# before returning, so the subsequent `npm` call hits that version.
+npm() {
+  _npm_guard_intercept "$@" && return 1
   local real_args=("${(@)@:#--allow-npm}")
   if typeset -f _load_nvm > /dev/null 2>&1; then
     _load_nvm
@@ -195,3 +206,16 @@ npm() {
     command npm "${real_args[@]}"
   fi
 }
+
+# Patch _load_nvm so the npm guard survives nvm's `unset -f npm`.
+# nvm's lazy-loader unconditionally unsets the npm shell function; without this
+# patch, any command that triggers nvm loading (e.g. `nvm use`) permanently
+# removes the guard for the rest of that shell session.
+if typeset -f _load_nvm > /dev/null 2>&1; then
+  _npm_guard_orig_loader="${functions[_load_nvm]}"
+  eval "_load_nvm() {
+    ${_npm_guard_orig_loader}
+    _npm_guard_register
+  }"
+  unset _npm_guard_orig_loader
+fi
