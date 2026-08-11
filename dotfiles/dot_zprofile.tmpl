@@ -13,19 +13,17 @@ base64url::decode() {
 # avoid objc fork crashes with tools like Ansible on macos
 export OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES
 
+# custom keybinds
 {{- if or (eq .terminal "kitty") (eq .terminal "ghostty") }}
 # terminal: bash-style word boundaries and alt-arrow word navigation (kitty & ghostty)
 autoload -U select-word-style
 select-word-style bash
 bindkey "\e[1;3D" backward-word
 bindkey "\e[1;3C" forward-word
+bindkey "\e[13;2~" accept-line
+bindkey "\e[13;2u" accept-line
+bindkey "\e[27;2;13~" accept-line
 {{- end }}
-
-for keymap in emacs viins; do
-  bindkey -M "$keymap" "\e[13;2~" accept-line
-  bindkey -M "$keymap" "\e[13;2u" accept-line
-done
-unset keymap
 
 # kubernetes: merge kubeconfig files if present
 export KUBECONFIG="${HOME}/.kube/config:${HOME}/.kube/config-contexts:${HOME}/.kube/config-base"
