@@ -21,6 +21,12 @@ bindkey "\e[1;3D" backward-word
 bindkey "\e[1;3C" forward-word
 {{- end }}
 
+for keymap in emacs viins; do
+  bindkey -M "$keymap" "\e[13;2~" accept-line
+  bindkey -M "$keymap" "\e[13;2u" accept-line
+done
+unset keymap
+
 # kubernetes: merge kubeconfig files if present
 export KUBECONFIG="${HOME}/.kube/config:${HOME}/.kube/config-contexts:${HOME}/.kube/config-base"
 
