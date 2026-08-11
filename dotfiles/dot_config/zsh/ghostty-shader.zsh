@@ -9,6 +9,7 @@ if [[ "$TERM_PROGRAM" == "ghostty" ]]; then
 	typeset -gF _GC_NEXT_ALLOWED=0
 	typeset -gi _GC_COUNTER_MOD=$(( _GC_WRAP_SLOTS * _GC_STEPS ))
 	typeset -gi _GC_COUNTER=0
+	typeset -gi _GC_ENABLED=1
 
 	function _gc_emit_counter() {
 		local counter=$(( $1 % _GC_COUNTER_MOD ))
@@ -59,6 +60,32 @@ if [[ "$TERM_PROGRAM" == "ghostty" ]]; then
 			_gc_roll_reverse $start &!
 		fi
 		zle .backward-delete-char "$@"
+	}
+
+	function _gc_enable() {
+		(( _GC_ENABLED = 1 ))
+		zle -N self-insert _gc_self_insert
+		zle -N backward-delete-char _gc_backspace
+		_gc_emit_counter $_GC_COUNTER
+	}
+
+	function _gc_disable() {
+		(( _GC_ENABLED = 0 ))
+		zle -A .self-insert self-insert
+		zle -A .backward-delete-char backward-delete-char
+		printf '\033]112\a' > "$TTY" 2>/dev/null
+	}
+
+	function _gc_toggle() {
+		if (( _GC_ENABLED )); then
+			_gc_disable
+		else
+			_gc_enable
+		fi
+	}
+
+	function shader() {
+		_gc_toggle
 	}
 
 	zle -N self-insert _gc_self_insert

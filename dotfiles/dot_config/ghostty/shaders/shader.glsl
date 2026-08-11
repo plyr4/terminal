@@ -53,7 +53,7 @@ int decodeSignalCounter(vec3 color) {
 }
 
 float decodedTurns(int currCounter) {
-    if (currCounter < 0) return 0.0;
+    if (currCounter < 0) return -1.0;
     return float(currCounter) / ROLL_STEPS;
 }
 
@@ -96,6 +96,10 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
     vec4 termColor = texture(iChannel0, uv);
 
     float turns = decodedTurns(decodeSignalCounter(iCurrentCursorColor.rgb));
+    if (turns < 0.0) {
+        fragColor = termColor;
+        return;
+    }
 
     float completedRolls = floor(turns);
     float rollProgress   = fract(turns);
