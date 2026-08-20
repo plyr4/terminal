@@ -6,7 +6,7 @@
 export ALPINE_PROXY="https://binrepo.target.com/artifactory/alpine-remote/v3.19"
 
 # go proxy and checksum database
-export GOPROXY="https://binrepo.target.com/artifactory/golang-remote,https://binrepo.target.com/artifactory/api/go/go-virtual"
+export GOPROXY="https://proxy.golang.org,direct,https://binrepo.target.com/artifactory/golang-remote,https://binrepo.target.com/artifactory/api/go/go-virtual"
 export GONOSUMDB="git.target.com,github.com/target-corp"
 
 # ssl certificate bundle
