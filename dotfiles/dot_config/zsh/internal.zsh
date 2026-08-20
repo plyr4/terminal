@@ -127,3 +127,9 @@ post_webhook() {
 
   rm payload.json
 }
+
+# TAP
+alias tc-repos="echo 'Fetching TAP Console repos...'; gh search repos org:target-corp props.IAM-Organization:console --limit 20 --json url --jq '.[].url'"
+
+# davidvader
+alias dv-repos="echo 'Fetching davidvader repos...'; gh search repos org:target-corp props.IAM-Application:davidvader --limit 20 --json url --jq '.[].url'"
