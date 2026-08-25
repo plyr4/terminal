@@ -22,8 +22,14 @@ alias tgt_cert_refresh="curl http://certs.target.com/pki/tgt-ca-bundle.crt --cre
 export VAULT_ADDR=https://prod.vault.target.com:443
 
 # dayton
-export PATH="$PATH:$HOME/.local/bin"
-export PATH="$HOME/.config/dayton/bin:$PATH"
+case ":$PATH:" in
+  *":$HOME/.local/bin:"*) ;;
+  *) export PATH="$PATH:$HOME/.local/bin" ;;
+esac
+case ":$PATH:" in
+  *":$HOME/.config/dayton/bin:"*) ;;
+  *) export PATH="$HOME/.config/dayton/bin:$PATH" ;;
+esac
 
 # directory navigation
 alias cdi='cdd; cd git.target.com'
@@ -129,7 +135,8 @@ post_webhook() {
 }
 
 # TAP
-alias tc-repos="echo 'Fetching TAP Console repos...'; gh search repos org:target-corp props.IAM-Organization:console --limit 20 --json url --jq '.[].url'"
+alias tc-repos="echo 'Fetching TAP Console repos...'; gh search repos org:target-corp props.IAM-Organization:console --limit 20 --json url --jq '.[].url'; gh search repos org:target-corp props.IAM-Organization:tapconsole-demo --limit 20 --json url --jq '.[].url'"
 
 # davidvader
 alias dv-repos="echo 'Fetching davidvader repos...'; gh search repos org:target-corp props.IAM-Application:davidvader --limit 20 --json url --jq '.[].url'"
+alias gs=git-spice
