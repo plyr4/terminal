@@ -48,7 +48,11 @@ if [ -s "${HOMEBREW_PREFIX:-/opt/homebrew}/opt/nvm/nvm.sh" ]; then
     unset -f nvm node npm npx corepack 2>/dev/null
     \. "$d/nvm.sh"
     [ -s "$d/etc/bash_completion.d/nvm" ] && \. "$d/etc/bash_completion.d/nvm"
-    rehash 2>/dev/null || true
+    # ensure nvm's node version comes first in PATH, before Homebrew's node
+    if [ -n "$NVM_BIN" ]; then
+      export PATH="$NVM_BIN:${PATH#"$NVM_BIN":}"
+    fi
+    hash -r 2>/dev/null || true
   }
   for nvm_cmd in nvm node npm npx corepack; do
     eval "${nvm_cmd}() { _load_nvm; ${nvm_cmd} \"\$@\"; }"
