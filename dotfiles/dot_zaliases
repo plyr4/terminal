@@ -53,15 +53,33 @@ alias grep='grep --color=auto'
 alias egrep='egrep --color=auto'
 alias fgrep='fgrep --color=auto'
 
-# vscode
+# vscode / rider
 alias code,='code .'
 alias code.='code .'
 
-# code: run `code .` when called with a bare comma, otherwise pass through
+# walks up the directory tree looking for .sln or .csproj files
+_is_csharp_project() {
+  local dir="$PWD"
+  while [[ "$dir" != "/" ]]; do
+    local matches=("$dir"/*.sln(N) "$dir"/*.csproj(N))
+    (( ${#matches} > 0 )) && return 0
+    dir="${dir:h}"
+  done
+  return 1
+}
+
+# code: open in Rider for C# projects, VS Code otherwise; bare comma opens current dir
 code() {
-  if [[ $@ == "," ]]; then
-    command code .
+  local target=("$@")
+  [[ $@ == "," ]] && target=(".")
+
+  if _is_csharp_project; then
+    if command -v rider &>/dev/null; then
+      rider "${target[@]}"
+    else
+      open -a "Rider" "${target[@]}"
+    fi
   else
-    command code "$@"
+    command code "${target[@]}"
   fi
 }
