@@ -1,0 +1,8 @@
+{{- /* only the chosen terminal config is applied. */ -}}
+{{- if ne .terminal "kitty" }}
+.config/kitty
+{{- end }}
+{{- if ne .terminal "ghostty" }}
+.config/ghostty
+.config/zsh/ghostty-shader.zsh
+{{- end }}

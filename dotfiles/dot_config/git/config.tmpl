@@ -1,0 +1,37 @@
+[user]
+	name = plyr4
+	email = davelvader@gmail.com
+{{- $signingkey := "" }}
+{{- if hasKey . "signingkey" }}{{ $signingkey = .signingkey }}{{ end }}
+{{- if $signingkey }}
+	signingkey = {{ $signingkey }}
+{{- end }}
+
+[commit]
+{{- if $signingkey }}
+	gpgsign = true
+{{- else }}
+	gpgsign = false
+{{- end }}
+
+[push]
+	default = simple
+	autoSetupRemote = true
+
+[pull]
+	rebase = false
+
+[init]
+	defaultBranch = main
+
+[safe]
+	directory = .
+
+[url "ssh://git@github.com/"]
+	insteadOf = https://github.com/
+
+[filter "lfs"]
+	clean = git-lfs clean -- %f
+	smudge = git-lfs smudge -- %f
+	process = git-lfs filter-process
+	required = true
